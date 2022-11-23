@@ -41,6 +41,18 @@ const run = async () => {
 			res.send(bikes);
 		});
 
+		// getting bikes brand names as for category section
+		app.get('/brands', async (req, res) => {
+			// const brands = await bikesCollection
+			// 	.find({})
+			// 	.project({ brand: 1 })
+			// 	.toArray();
+			const brands = await bikesCollection.distinct('brand');
+
+			console.log(brands);
+			res.send(brands);
+		});
+
 		// creating user
 		app.post('/users', async (req, res) => {
 			const user = req.body;
