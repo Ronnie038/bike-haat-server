@@ -27,6 +27,7 @@ const run = async () => {
 	try {
 		const bikeHatDB = client.db('bike-hat');
 		const bikesCollection = bikeHatDB.collection('bikes-collection');
+		const usersCollection = bikeHatDB.collection('users');
 
 		// make sure you use verifyAdmin after verifyJWT
 
@@ -38,6 +39,14 @@ const run = async () => {
 		app.get('/bikes', async (req, res) => {
 			const bikes = await bikesCollection.find({}).toArray();
 			res.send(bikes);
+		});
+
+		// creating user
+		app.post('/users', async (req, res) => {
+			const user = req.body;
+			const addUser = await usersCollection.insertOne(user);
+			console.log(user);
+			res.send(addUser);
 		});
 	} finally {
 	}
