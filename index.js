@@ -75,12 +75,16 @@ const run = async () => {
 				email: user.email,
 			};
 			const updatedDoc = {
-				$set: user,
+				$set: {
+					name: user.name,
+					email: user.email,
+					role: user.role,
+				},
 			};
-			console.log(user);
-			const addUser = await usersCollection.updateOne(filter, updatedDoc);
 
-			console.log(addUser);
+			const addUser = await usersCollection.updateOne(filter, updatedDoc, {
+				upsert: true,
+			});
 
 			res.send(addUser);
 		});
@@ -104,6 +108,36 @@ const run = async () => {
 			const sellers = await usersCollection.find(query).toArray();
 			// console.log(sellers);
 			res.send(sellers);
+		});
+
+		// | getting advertised products
+
+		app.get('/advertisedProducts', async (req, res) => {
+			const query = {
+				advertise: true,
+			};
+			const result = await bikesCollection.find(query).toArray();
+
+			res.send(result);
+		});
+
+		// | add advirtisement method
+
+		app.put('/addAdvertise/:id', async (req, res) => {
+			const id = req.params.id;
+			const filter = { _id: ObjectId(id) };
+			const updatedDoc = {
+				$set: {
+					advertise: true,
+				},
+			};
+
+			const result = await bikesCollection.updateOne(filter, updatedDoc, {
+				upsert: true,
+			});
+
+			console.log(result);
+			res.send(result);
 		});
 
 		// | deleting user
