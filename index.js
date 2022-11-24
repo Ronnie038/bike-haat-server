@@ -51,10 +51,21 @@ const run = async () => {
 			res.send(bikes);
 		});
 
-		// getting bikes brand names as for category section
+		// getting bikes  brand names as for category section
 		app.get('/brands', async (req, res) => {
 			const brands = await bikesCollection.distinct('brand');
 			res.send(brands);
+		});
+
+		//| adding bikes in database
+
+		app.post('/bikes', async (req, res) => {
+			const bikeObj = req.body;
+
+			const result = await bikesCollection.insertOne(bikeObj);
+			console.log(result);
+
+			res.send(result);
 		});
 
 		// creating user
@@ -72,7 +83,7 @@ const run = async () => {
 			};
 
 			const buyers = await usersCollection.find(query).toArray();
-			// console.log(buyers);
+			// console.log(buyers
 			res.send(buyers);
 		});
 		// getting all buyers from users collection
