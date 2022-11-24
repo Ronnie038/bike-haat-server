@@ -65,18 +65,39 @@ const run = async () => {
 			res.send(addUser);
 		});
 
-		// getting all buyers from users collection
+		//?| getting all buyers from users collection
 		app.get('/buyers', async (req, res) => {
 			const query = {
 				role: 'buyer',
 			};
 
 			const buyers = await usersCollection.find(query).toArray();
-			console.log(buyers);
+			// console.log(buyers);
 			res.send(buyers);
 		});
+		// getting all buyers from users collection
+		app.get('/sellers', async (req, res) => {
+			const query = {
+				role: 'seller',
+			};
 
-		// getting all  bookings
+			const sellers = await usersCollection.find(query).toArray();
+			// console.log(sellers);
+			res.send(sellers);
+		});
+
+		// | deleting user
+
+		app.delete('/users/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = {
+				_id: ObjectId(id),
+			};
+			const result = await usersCollection.deleteOne(query);
+			res.send(result);
+		});
+
+		//  getting all  bookings
 		app.get('/bookings', async (req, res) => {
 			const email = req.query.email;
 			const query = {
