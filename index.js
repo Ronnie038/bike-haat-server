@@ -69,9 +69,18 @@ const run = async () => {
 		});
 
 		// creating user
-		app.post('/users', async (req, res) => {
+		app.put('/users', async (req, res) => {
 			const user = req.body;
-			const addUser = await usersCollection.insertOne(user);
+			const filter = {
+				email: user.email,
+			};
+			const updatedDoc = {
+				$set: user,
+			};
+			console.log(user);
+			const addUser = await usersCollection.updateOne(filter, updatedDoc);
+
+			console.log(addUser);
 
 			res.send(addUser);
 		});
@@ -107,6 +116,16 @@ const run = async () => {
 			const result = await usersCollection.deleteOne(query);
 			res.send(result);
 		});
+		// | deleting product by id
+
+		app.delete('/product/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = {
+				_id: ObjectId(id),
+			};
+			const result = await bikesCollection.deleteOne(query);
+			res.send(result);
+		});
 
 		//  getting all  bookings
 		app.get('/bookings', async (req, res) => {
@@ -125,6 +144,19 @@ const run = async () => {
 
 			const result = await bookingsollection.insertOne(booking);
 
+			res.send(result);
+		});
+
+		// | getting sellerProducts by email
+
+		app.get('/sellerProducts/:email', async (req, res) => {
+			const email = req.params.email;
+
+			const query = {
+				email: email,
+			};
+
+			const result = await bikesCollection.find(query).toArray();
 			res.send(result);
 		});
 	} finally {
