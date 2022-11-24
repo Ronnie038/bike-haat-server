@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const { query } = require('express');
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
@@ -28,6 +29,7 @@ const run = async () => {
 		const bikeHatDB = client.db('bike-hat');
 		const bikesCollection = bikeHatDB.collection('bikes-collection');
 		const usersCollection = bikeHatDB.collection('users');
+		const bookingsollection = bikeHatDB.collection('bookings');
 
 		// make sure you use verifyAdmin after verifyJWT
 
@@ -36,20 +38,22 @@ const run = async () => {
 
          random secure key jeneretor //* require('crypto').randomBytes(64).toString('hex')
         */
-		app.get('/bikes', async (req, res) => {
-			const bikes = await bikesCollection.find({}).toArray();
+
+		// getting bikes by brand name
+
+		app.get('/bikes/:brand', async (req, res) => {
+			const brand = req.params.brand;
+			const query = {
+				brand: brand,
+			};
+			const bikes = await bikesCollection.find(query).toArray();
+
 			res.send(bikes);
 		});
 
 		// getting bikes brand names as for category section
 		app.get('/brands', async (req, res) => {
-			// const brands = await bikesCollection
-			// 	.find({})
-			// 	.project({ brand: 1 })
-			// 	.toArray();
 			const brands = await bikesCollection.distinct('brand');
-
-			console.log(brands);
 			res.send(brands);
 		});
 
@@ -59,6 +63,15 @@ const run = async () => {
 			const addUser = await usersCollection.insertOne(user);
 			console.log(user);
 			res.send(addUser);
+		});
+
+		// creating bookings
+		app.post('/bookings', async (req, res) => {
+			const booking = req.body;
+
+			const result = await bookingsollection.insertOne(booking);
+			console.log(booking);
+			res.send(result);
 		});
 	} finally {
 	}
