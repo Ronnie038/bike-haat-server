@@ -61,16 +61,38 @@ const run = async () => {
 		app.post('/users', async (req, res) => {
 			const user = req.body;
 			const addUser = await usersCollection.insertOne(user);
-			console.log(user);
+
 			res.send(addUser);
 		});
 
+		// getting all buyers from users collection
+		app.get('/buyers', async (req, res) => {
+			const query = {
+				role: 'buyer',
+			};
+
+			const buyers = await usersCollection.find(query).toArray();
+			console.log(buyers);
+			res.send(buyers);
+		});
+
+		// getting all  bookings
+		app.get('/bookings', async (req, res) => {
+			const email = req.query.email;
+			const query = {
+				email: email,
+			};
+			console.log(email);
+
+			const result = await bookingsollection.find(query).toArray();
+			res.send(result);
+		});
 		// creating bookings
 		app.post('/bookings', async (req, res) => {
 			const booking = req.body;
 
 			const result = await bookingsollection.insertOne(booking);
-			console.log(booking);
+
 			res.send(result);
 		});
 	} finally {
