@@ -29,7 +29,8 @@ const run = async () => {
 		const bikeHatDB = client.db('bike-hat');
 		const bikesCollection = bikeHatDB.collection('bikes-collection');
 		const usersCollection = bikeHatDB.collection('users');
-		const bookingsollection = bikeHatDB.collection('bookings');
+		const bookingsCollection = bikeHatDB.collection('bookings');
+		const paymentsCollection = bikeHatDB.collection('payments');
 
 		// make sure you use verifyAdmin after verifyJWT
 
@@ -63,7 +64,7 @@ const run = async () => {
 			const bikeObj = req.body;
 
 			const result = await bikesCollection.insertOne(bikeObj);
-			console.log(result);
+			// console.log(result);
 
 			res.send(result);
 		});
@@ -99,7 +100,7 @@ const run = async () => {
 			// console.log(buyers
 			res.send(buyers);
 		});
-		// getting all buyers from users collection
+		// getting all sellers from users collection
 		app.get('/sellers', async (req, res) => {
 			const query = {
 				role: 'seller',
@@ -136,7 +137,7 @@ const run = async () => {
 				upsert: true,
 			});
 
-			console.log(result);
+			// console.log(result);
 			res.send(result);
 		});
 
@@ -166,7 +167,19 @@ const run = async () => {
 			const result = await usersCollection.updateOne(filter, updatedDoc, {
 				upsert: true,
 			});
+
 			res.send(result);
+		});
+
+		// |  checking seller verified or not
+
+		app.get('/isSellerVerified/:email', async (req, res) => {
+			const email = req.params.email;
+			// console.log(email);
+			const query = { email: email };
+			const user = await usersCollection.findOne(query);
+
+			res.send({ verified: user?.verified === true });
 		});
 
 		// | deleting product by id
@@ -186,16 +199,74 @@ const run = async () => {
 			const query = {
 				email: email,
 			};
-			console.log(email);
+			// console.log(email);
 
-			const result = await bookingsollection.find(query).toArray();
+			const result = await bookingsCollection.find(query).toArray();
 			res.send(result);
 		});
 		// creating bookings
 		app.post('/bookings', async (req, res) => {
 			const booking = req.body;
 
-			const result = await bookingsollection.insertOne(booking);
+			const result = await bookingsCollection.insertOne(booking);
+
+			res.send(result);
+		});
+		// |   payment method
+
+		app.post('/create-payment-intent', async (req, res) => {
+			const booking = req.body;
+			const price = booking.price;
+			const amount = price * 100;
+
+			const paymentIntent = await stripe.paymentIntents.create({
+				currency: 'usd',
+				amount: amount,
+				payment_method_types: ['card'],
+			});
+
+			res.send({ clientSecret: paymentIntent.client_secret });
+		});
+
+		// * adding payments in database
+
+		app.post('/payments', async (req, res) => {
+			const payment = req.body;
+			const result = await paymentsCollection.insertOne(payment);
+
+			// |filtering for booking status updating
+			const id = payment.bookingId;
+			const filter = {
+				_id: ObjectId(id),
+			};
+			const updatedDoc = {
+				$set: {
+					paid: true,
+					transactionId: payment.transactionId,
+				},
+			};
+			const updateBookingStatus = await bookingsCollection.updateOne(
+				filter,
+				updatedDoc
+			);
+
+			// | filtering for product status update
+			const productId = payment.productId;
+			const productFilter = {
+				_id: ObjectId(productId),
+			};
+			const productUpdatedDoc = {
+				$set: {
+					sold: true,
+				},
+			};
+			const updateProductStatus = await bikesCollection.updateOne(
+				productFilter,
+				productUpdatedDoc
+			);
+
+			console.log(updateBookingStatus);
+			console.log(updateProductStatus);
 
 			res.send(result);
 		});
