@@ -150,6 +150,25 @@ const run = async () => {
 			const result = await usersCollection.deleteOne(query);
 			res.send(result);
 		});
+
+		// | verify seller by id
+
+		app.put('/verifySeller', async (req, res) => {
+			const id = req.body;
+			const filter = {
+				_id: ObjectId(id),
+			};
+			const updatedDoc = {
+				$set: {
+					verified: true,
+				},
+			};
+			const result = await usersCollection.updateOne(filter, updatedDoc, {
+				upsert: true,
+			});
+			res.send(result);
+		});
+
 		// | deleting product by id
 
 		app.delete('/product/:id', async (req, res) => {
