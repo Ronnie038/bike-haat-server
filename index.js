@@ -296,6 +296,21 @@ const run = async () => {
 			const result = await bikesCollection.find(query).toArray();
 			res.send(result);
 		});
+
+		/// getting users role by using user email
+		// / to access user Specific route
+
+		app.get('/useRole/:email', async (req, res) => {
+			const email = req.params.email;
+			const query = {
+				email: email,
+			};
+			const result = await usersCollection.findOne(query);
+			console.log(result);
+			const role = result?.role;
+			console.log(role);
+			res.send({ role });
+		});
 	} finally {
 	}
 };
