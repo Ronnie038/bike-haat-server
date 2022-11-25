@@ -46,7 +46,16 @@ const run = async () => {
 			const brand = req.params.brand;
 			const query = {
 				brand: brand,
+				$and: [
+					{
+						sold: { $exists: false },
+					},
+				],
 			};
+			// const query = {
+			// 	brand: brand,
+			// 	sold: { $ne: true },
+			// };
 			const bikes = await bikesCollection.find(query).toArray();
 
 			res.send(bikes);
@@ -66,6 +75,40 @@ const run = async () => {
 			const result = await bikesCollection.insertOne(bikeObj);
 			// console.log(result);
 
+			res.send(result);
+		});
+		// | getting advertised products
+
+		app.get('/advertisedProducts', async (req, res) => {
+			const query = {
+				advertise: true,
+				$and: [
+					{
+						sold: { $exists: false },
+					},
+				],
+			};
+			const result = await bikesCollection.find(query).toArray();
+
+			res.send(result);
+		});
+
+		// | add advirtisement method
+
+		app.put('/addAdvertise/:id', async (req, res) => {
+			const id = req.params.id;
+			const filter = { _id: ObjectId(id) };
+			const updatedDoc = {
+				$set: {
+					advertise: true,
+				},
+			};
+
+			const result = await bikesCollection.updateOne(filter, updatedDoc, {
+				upsert: true,
+			});
+
+			// console.log(result);
 			res.send(result);
 		});
 
@@ -109,36 +152,6 @@ const run = async () => {
 			const sellers = await usersCollection.find(query).toArray();
 			// console.log(sellers);
 			res.send(sellers);
-		});
-
-		// | getting advertised products
-
-		app.get('/advertisedProducts', async (req, res) => {
-			const query = {
-				advertise: true,
-			};
-			const result = await bikesCollection.find(query).toArray();
-
-			res.send(result);
-		});
-
-		// | add advirtisement method
-
-		app.put('/addAdvertise/:id', async (req, res) => {
-			const id = req.params.id;
-			const filter = { _id: ObjectId(id) };
-			const updatedDoc = {
-				$set: {
-					advertise: true,
-				},
-			};
-
-			const result = await bikesCollection.updateOne(filter, updatedDoc, {
-				upsert: true,
-			});
-
-			// console.log(result);
-			res.send(result);
 		});
 
 		// | deleting user
