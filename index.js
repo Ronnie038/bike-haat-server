@@ -9,6 +9,13 @@ const { query } = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
+const corsConfig = {
+	origin: '',
+	credentials: true,
+	methods: ['GET', 'POST', 'PUT', 'DELETE'],
+};
+// app.use(cors(corsConfig));
+// app.options('', cors(corsConfig));
 app.use(cors());
 app.use(express.json());
 
@@ -166,7 +173,7 @@ const run = async () => {
 			const query = {
 				role: role,
 			};
-			console.log(role);
+
 			const buyers = await usersCollection.find(query).toArray();
 			// console.log(buyers
 			res.send(buyers);
@@ -325,9 +332,6 @@ const run = async () => {
 				productUpdatedDoc
 			);
 
-			console.log(updateBookingStatus);
-			console.log(updateProductStatus);
-
 			res.send(result);
 		});
 
@@ -356,7 +360,6 @@ const run = async () => {
 			const query = { email };
 
 			const user = await usersCollection.findOne(query);
-			console.log({ user, email });
 
 			if (user) {
 				const token = jwt.sign({ email }, process.env.SECRET_ACCESS_TOKEN, {
@@ -364,7 +367,7 @@ const run = async () => {
 				});
 				return res.send({ accessToken: token });
 			}
-			// console.log(user);
+
 			res.status(403).send({ accessToken: '' });
 		});
 
@@ -379,7 +382,7 @@ const run = async () => {
 			const result = await usersCollection.findOne(query);
 
 			const role = result?.role;
-			console.log(role);
+
 			res.send({ role });
 		});
 	} finally {
